@@ -6,11 +6,14 @@ import os
 from datetime import datetime
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token, create_refresh_token,JWTManager
+from flask_cors import CORS
 
 load_dotenv()
 
 app=Flask(__name__)
 bcrypt=Bcrypt(app)
+CORS(app, resources={r"/*": {"origins": ["http://localhost:5173", "http://127.0.0.1:5173"]}}, supports_credentials=True)
+
 jwt = JWTManager(app)
 app.secret_key=os.getenv('SECRET_KEY')
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
@@ -35,32 +38,14 @@ google = oauth.register(
 def home():
     return "app running"
 
-@app.route('/signup', methods=['POST'])
+# Sign up using google
+@app.route('/googlesignup', methods=['GET'])
 def signup():
-    data = request.get_json()
-    username = data['username']
-    email = data['email']
-    password = data['password']
+    redirect_uri=url_for('callback',_external=True)
+    return google.authorize_redirect(redirect_uri)
 
-    existing_user = users.find_one({"email": email})
-    if existing_user:
-        return jsonify({"message": "User already exists"}), 400
-
-    hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
-    user_data = {
-        "username": username,
-        "email": email,
-        "password": hashed_pw,
-        "image": None,
-        "refreshToken": None,
-        "createdAt": datetime.utcnow(),
-        "updatedAt": datetime.utcnow()
-    }
-    users.insert_one(user_data)
-    return jsonify({"message": "Signup successful!"}), 201
-
-#Login
-@app.route("/login", methods=['GET'])  
+#Login using google
+@app.route("/googlelogin", methods=['GET'])  
 #data here does not goto server it goes to google and it send redirected url that is why there is GET 
 def login():
     redirect_uri=url_for('callback',_external=True)
@@ -80,10 +65,10 @@ def callback():
     user=users.find_one({'email':email})
     if  user:
         users.update_one(
-            {'email':email},{"$set":{"image":picture,"updatedAt":datetime.utcnow()}}
-        )
+            {'email':email},{"$set":{"image":picture,"updatedAt":datetime.utcnow()}})
+        
     else:
-        users.insert_one(new_user={
+        users.insert_one({
             "username":name,
             "email":email,
             "password":None,
@@ -106,5 +91,136 @@ def callback():
         "refresh_token":refresh_token
     })
 
+# @app.route('/signup', methods=['POST'])
+# def normal_signup():
+#     # data = request.get_json()
+#     # name = data['username']
+#     # email = data['email']
+#     # password = data['password']
+#     # confirm_password = data.get('confirmPassword') or data.get('confirm_password')
+#     data = request.get_json()
+#     if not data:
+#         return jsonify({"error": "Invalid or missing JSON data"}), 400
+
+#     name = data.get('username')
+#     email = data.get('email')
+#     password = data.get('password')
+#     confirm_password = data.get('confirmPassword') or data.get('confirm_password')
+
+
+#     if not name or not email or not password or not confirm_password:
+#         return jsonify({"error": "All fields required"}), 400
+
+#     # Check if already exists
+#     if users.find_one({'email': email}):
+#         return jsonify({"error": "User already exists"}), 409
+    
+#     elif password != confirm_password:
+#         return jsonify({"error": "Password and confirm password does not match"}), 409
+
+#     hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
+
+#     users.insert_one({
+#         "username": name,
+#         "email": email,
+#         "password": hashed_pw,
+#         "image": None,
+#         "createdAt": datetime.utcnow(),
+#         "updatedAt": datetime.utcnow(),
+#         "refreshToken": None
+#     })
+
+#     access_token = create_access_token(identity=email)
+#     refresh_token = create_refresh_token(identity=email)
+
+#     users.update_one({"email": email}, {"$set": {"refreshToken": refresh_token}})
+
+#     return jsonify({
+#         "message": "Signup successful",
+#         "email": email,
+#         "access_token": access_token,
+#         "refresh_token": refresh_token
+#     }), 201
+
+## Normal Signup
+@app.route('/signup', methods=['POST'])
+def normal_signup():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Invalid or missing JSON data"}), 400
+
+        name = data.get('name')
+        email = data.get('email')
+        password = data.get('password')
+        confirmPassword = data.get('confirmPassword')
+        if not name or not email or not password or not confirmPassword:
+            return jsonify({"error": "All fields required"}), 400
+
+        if users.find_one({'email': email}):
+            return jsonify({"error": "User already exists"}), 409
+
+        if password != confirmPassword:
+            return jsonify({"error": "Password and confirm password does not match"}), 409
+
+        hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
+
+        users.insert_one({
+            "username": name,
+            "email": email,
+            "password": hashed_pw,
+            "image": None,
+            "createdAt": datetime.utcnow(),
+            "updatedAt": datetime.utcnow(),
+            "refreshToken": None
+        })
+
+        access_token = create_access_token(identity=email)
+        refresh_token = create_refresh_token(identity=email)
+
+        users.update_one({"email": email}, {"$set": {"refreshToken": refresh_token}})
+
+        return jsonify({
+            "message": "Signup successful",
+            "email": email,
+            "access_token": access_token,
+            "refresh_token": refresh_token
+        }), 201
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# =======================
+# 🔹 Normal Login
+# =======================
+@app.route('/login', methods=['POST'])
+def normal_login():
+    data = request.get_json()
+    email = data['email']
+    password = data['password']
+
+    user = users.find_one({'email': email})
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    if not user.get("password"):
+        return jsonify({"error": "Use Google login for this account"}), 400
+
+    if not bcrypt.check_password_hash(user['password'], password):
+        return jsonify({"error": "Invalid credentials"}), 401
+
+    access_token = create_access_token(identity=email)
+    refresh_token = create_refresh_token(identity=email)
+    users.update_one({"email": email}, {"$set": {"refreshToken": refresh_token}})
+
+    return jsonify({
+        "message": "Login successful",
+        "email": email,
+        "access_token": access_token,
+        "refresh_token": refresh_token
+    }), 200
+
+
 if __name__== '__main__':
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0',debug=True, port=5000)
