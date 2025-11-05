@@ -23,6 +23,7 @@ def show_categories():
       
     return jsonify(category_list)
 
+@app.route("/feature", methods=['GET'])
 def featured_products():
     featured_ids = [
         "65b54e14a39a3ffd12fd2c12",
