@@ -2,7 +2,6 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
 from flask import Flask,request,jsonify
-from flask_cors import CORS
 from bson import ObjectId
 
 load_dotenv()
@@ -86,5 +85,3 @@ def single_product(product_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 400
     
-# if __name__== '__main__':
-#     app.run(host='0.0.0.0', port=5002,debug=True)
