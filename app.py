@@ -1,7 +1,6 @@
 from flask_cors import CORS
 from flask import Flask
 from flask_jwt_extended import JWTManager
-from dotenv import load_dotenv
 from flask_bcrypt import Bcrypt
 import os
 from pymongo import MongoClient
@@ -18,8 +17,6 @@ from order import confirm_order, view_orders, cancel_order
 
 app=Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
-
-load_dotenv()
 
 # Set secret key for JWT
 app.config["SECRET_KEY"]=os.getenv("SECRET_KEY")
@@ -200,4 +197,6 @@ def cancel_order_route(current_user):
     return cancel_order(current_user)
 
 if __name__== '__main__':
+    from dotenv import load_dotenv
+    load_dotenv()
     app.run(host='0.0.0.0', use_reloader=False, port=5000,debug=True)

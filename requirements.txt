@@ -1,0 +1,12 @@
+Flask
+flask-cors
+flask-bcrypt
+flask-jwt-extended
+python-dotenv
+pymongo
+Authlib
+cloudinary
+gunicorn
+requests
+dnspython
+bcrypt
