@@ -10,7 +10,7 @@ from signup import normal_signup,normal_login,google_signup,google_login,callbac
 from home import show_categories,featured_products
 from product import products_page,get_by_brand,get_by_category,get_by_price,single_product
 from authentication import token_required
-from profile import user_details,upload_profile_photo,add_address,view_address,delete_address,update_address
+from profile import user_details,upload_profile_photo,add_address,view_address,delete_address,update_address,change_user_password
 from cart import view_cart,add_to_cart,delete_from_cart,reduce_from_cart
 from wishlist import delete_from_wishlist,add_to_wishlist,view_wishlist
 from order import confirm_order, view_orders, cancel_order
@@ -135,6 +135,11 @@ def delete_address_route(current_user):
 def update_address_route(current_user):
     return update_address(current_user)
 
+# Change password
+@app.route('/changepassword',methods=['POST'])
+@token_required
+def change_password_route(current_user):
+    return change_user_password(current_user)
 
 # Cart Page
 

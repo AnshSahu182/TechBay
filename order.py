@@ -13,15 +13,16 @@ users=db["users"]
 products = db["products"]
 addresses=db["addresses"]
 
-# @app.route('/confirmorders', methods=['POST'])
+# @app.route('/confirmorder', methods=['POST'])
 # @token_required
 def confirm_order(current_user):
     try:
         user_id = current_user["_id"]
-        payment_id = "1234567890"
+        data= request.get_json()
+        paymentId= data.get('paymentId')
 
         # Fetch address
-        address = addresses.find_one({"owner": user_id})
+        address = data.get('address')
         if not address:
             return jsonify({"message": "No address found for this user!"}), 404
 
@@ -50,8 +51,8 @@ def confirm_order(current_user):
         # Create order
         new_order = {
             "owner": user_id,
-            "address": address["_id"],
-            "paymentId": payment_id,
+            "address": ObjectId(address),
+            "paymentId": paymentId,
             "products": order_products,        # <--- Direct cart copy
             "amount": total_amount,
             "createdAt": datetime.utcnow(),

@@ -6,8 +6,10 @@ from bson import ObjectId
 from datetime import datetime
 import cloudinary
 import cloudinary.uploader
-load_dotenv()
+from flask_bcrypt import Bcrypt
 
+load_dotenv()
+bcrypt= Bcrypt()
 cloudinary.config(
     secure = True,
     api_key = os.getenv("CLOUDINARY_API_KEY"),
@@ -171,3 +173,42 @@ def delete_address(current_user):
     addresses.delete_one({"owner": current_user["_id"]})
     return jsonify({"message": "Address deleted successfully"}), 200
 
+# Change password
+# @app.route('/change_password',methods=['POST'])
+def change_user_password(current_user):
+    try:
+        data = request.get_json()
+        old_password = data.get("password")
+        new_password = data.get("new_password")
+
+        if not old_password or not new_password:
+            return jsonify({"message": "Both fields are required"}), 400
+
+        # new password must be different
+        if old_password == new_password:
+            return jsonify({"message": "New password must be different"}), 400
+
+        # find user in MongoDB
+        user = users.find_one({"_id": current_user["_id"]})
+        if not user:
+            return jsonify({"message": "User not found"}), 404
+
+        # check old password
+        if not bcrypt.check_password_hash(user["password"], old_password):
+            return jsonify({"message": "Invalid old password"}), 401
+
+        # hash new password
+        hashed_new_pw = bcrypt.generate_password_hash(new_password).decode("utf-8")
+
+        # update password in DB
+        users.update_one(
+            {"_id": user["_id"]},
+            {"$set": {
+                "password": hashed_new_pw,
+                "updatedAt": datetime.utcnow()
+            }}
+        )
+
+        return jsonify({"message": "Password changed successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
