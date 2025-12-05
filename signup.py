@@ -1,5 +1,5 @@
 from flask import request,jsonify, url_for
-from authlib.integrations.flask_client import OAuth # for login
+#from authlib.integrations.flask_client import OAuth # for login
 from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
@@ -7,6 +7,8 @@ from datetime import datetime
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token, create_refresh_token
 from datetime import datetime
+
+from oauth_config import oauth
 
 load_dotenv()
 
@@ -17,7 +19,6 @@ db=client["techbay"]
 users=db["users"]
 
 # 🔑 Google OAuth Configuration
-oauth = OAuth()
 google = oauth.register(
     name='google',
     client_id=os.getenv('CLIENT_ID'),
@@ -33,14 +34,14 @@ google = oauth.register(
 # Sign up using google
 # @app.route('/googlesignup', methods=['GET'])
 def google_signup():
-    redirect_uri=url_for('callback',_external=True)
+    redirect_uri=url_for('callback_route',_external=True)
     return google.authorize_redirect(redirect_uri)
 
 #Login using google
 # @app.route('/googlelogin', methods=['POST'])
 #data here does not goto server it goes to google and it send redirected url that is why there is GET 
 def google_login():
-    redirect_uri=url_for('callback',_external=True)
+    redirect_uri=url_for('callback_route',_external=True)
     return google.authorize_redirect(redirect_uri)
 
 #Callback (Direct google login ka data deta h )

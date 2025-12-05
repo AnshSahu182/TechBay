@@ -123,7 +123,45 @@ def view_orders(current_user):
 
     return jsonify({"orders": result}), 200
 
+# View order by id 
+def view_order_by_id(current_user,order_id):
+    user_id = current_user['_id']
+    order = orders.find_one({"_id":ObjectId(order_id), "owner":ObjectId(user_id)})
+    
+    if not order:
+        return jsonify({'message': 'No orders found for this user!'}), 404
 
+    formatted = {
+        "_id": str(order["_id"]),
+        "owner": str(order["owner"]),
+        "address": str(order["address"]),
+        "paymentId": order.get("paymentId", ""),
+        "amount": order.get("amount", 0),
+        "createdAt": str(order.get("createdAt")),
+        "updatedAt": str(order.get("updatedAt")),
+        "products": []
+        }
+
+        # Loop through ordered products
+    for p in order.get("products", []):
+        product_id = p["product_id"]
+
+        # Ensure ObjectId
+        if isinstance(product_id, str):
+            product_id = ObjectId(product_id)
+
+        # Fetch product details
+        product_details = products.find_one(
+            {"_id": product_id},
+            {"title": 1, "image": 1, "description": 1, "price": 1, "_id": 0}
+        )
+        formatted["products"].append({
+            "product_id": str(p["product_id"]),
+            "quantity": p.get("quantity", 1),
+            "product_details": product_details if product_details else {}
+        })
+
+    return jsonify({"orders": formatted}), 200
 
 # Cancel Order
 # @app.route('/cancelorder/<order_id>', methods=['DELETE'])

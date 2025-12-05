@@ -113,8 +113,6 @@ def add_address(current_user):
 # @app.route('/viewaddress', methods=['GET'])
 # @token_required
 def view_address(current_user):
-    user = users.find_one(
-            {"_id": current_user["_id"]},)
     
     address_cursor = addresses.find(
         {"owner": current_user["_id"]},
@@ -134,11 +132,11 @@ def view_address(current_user):
 #Update Address
 # @app.route('/updateaddress', methods=['PUT'])
 # @token_required
-def update_address(current_user):
+def update_address(current_user, address_id):
     data = request.get_json()
 
     # Find the address for this user
-    address = addresses.find_one({"owner": current_user["_id"]})
+    address = addresses.find_one({"_id":ObjectId(address_id)})
     if not address:
         return jsonify({"error": "Address not found"}), 404
 
@@ -163,14 +161,14 @@ def update_address(current_user):
 # Delete Address
 # @app.route('/deleteaddress', methods=['DELETE'])
 # @token_required
-def delete_address(current_user):
+def delete_address(current_user,address_id):
     # Find the address for this user
-    address = addresses.find_one({"owner": current_user["_id"]})
+    address = addresses.find_one({"_id":ObjectId(address_id)})
     if not address:
         return jsonify({"error": "Address not found"}), 404
 
     # Delete it
-    addresses.delete_one({"owner": current_user["_id"]})
+    addresses.delete_one({"_id": ObjectId(address_id)})
     return jsonify({"message": "Address deleted successfully"}), 200
 
 # Change password

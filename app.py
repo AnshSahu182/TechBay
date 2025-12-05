@@ -6,14 +6,15 @@ import os
 from pymongo import MongoClient
 from datetime import timedelta
 
-from signup import normal_signup,normal_login,google_signup,google_login,callback
+from oauth_config import oauth
+
 from home import show_categories,featured_products
 from product import products_page,get_by_brand,get_by_category,get_by_price,single_product,search_products
 from authentication import token_required
 from profile import user_details,upload_profile_photo,add_address,view_address,delete_address,update_address,change_user_password
 from cart import view_cart,add_to_cart,delete_from_cart,reduce_from_cart
 from wishlist import delete_from_wishlist,add_to_wishlist,view_wishlist
-from order import confirm_order, view_orders, cancel_order
+from order import confirm_order, view_orders, cancel_order,view_order_by_id
 
 app=Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -28,7 +29,8 @@ app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
 bcrypt = Bcrypt(app)
 bcrypt.init_app(app)
 jwt = JWTManager(app)
-
+oauth.init_app(app)
+from signup import normal_signup,normal_login,google_signup,google_login,callback
 # Connect MongoDB
 client=MongoClient(os.getenv('MongoClient_URI'))
 db=client["techbay"]
@@ -61,7 +63,7 @@ def normal_login_route():
     return normal_login() 
 
 ## Google Login
-@app.route('/googlelogin', methods=['POST'])
+@app.route('/googlelogin', methods=['GET'])
 def google_login_route():
     return google_login()
 
@@ -129,15 +131,15 @@ def add_address_route(current_user):
 def view_address_route(current_user):
     return view_address(current_user)
 
-@app.route('/deleteaddress', methods=['DELETE'])
+@app.route('/deleteaddress/<string:address_id>', methods=['DELETE'])
 @token_required
-def delete_address_route(current_user):
-    return delete_address(current_user)
+def delete_address_route(current_user,address_id):
+    return delete_address(current_user, address_id)
 
-@app.route('/updateaddress', methods=['PUT'])
+@app.route('/updateaddress/<string:address_id>', methods=['PUT'])
 @token_required
-def update_address_route(current_user):
-    return update_address(current_user)
+def update_address_route(current_user,address_id):
+    return update_address(current_user,address_id)
 
 # Change password
 @app.route('/changepassword',methods=['POST'])
@@ -196,6 +198,11 @@ def confirm_order_route(current_user):
 @token_required
 def view_orders_route(current_user):
     return view_orders(current_user)
+
+@app.route('/order/<string:order_id>', methods=['GET'])
+@token_required
+def view_order_by_id_route(current_user, order_id):
+    return view_order_by_id(current_user, order_id)
 
 @app.route('/cancelorder/<string:order_id>', methods=['DELETE'])
 @token_required
