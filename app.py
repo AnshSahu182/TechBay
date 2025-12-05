@@ -15,7 +15,7 @@ from profile import user_details,upload_profile_photo,add_address,view_address,d
 from cart import view_cart,add_to_cart,delete_from_cart,reduce_from_cart
 from wishlist import delete_from_wishlist,add_to_wishlist,view_wishlist
 from order import confirm_order, view_orders, cancel_order,view_order_by_id
-from signup import normal_signup,normal_login,google_verify
+
 
 app=Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -30,7 +30,8 @@ app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
 bcrypt = Bcrypt(app)
 bcrypt.init_app(app)
 jwt = JWTManager(app)
-# oauth.init_app(app)
+oauth.init_app(app)
+from signup import normal_signup,normal_login,google_verify,google_login,google_signup, callback
 
 # Connect MongoDB
 client=MongoClient(os.getenv('MongoClient_URI'))
@@ -40,20 +41,20 @@ users = db["users"]
 ##### COMMON Pages Start #####
 #SignUp Page
 
-# #Call back api
-# @app.route("/callback", methods=['GET'])
-# def callback_route():
-#     return callback()
+#Call back api
+@app.route("/callback", methods=['GET'])
+def callback_route():
+    return callback()
 
 ## Normal Signup
 @app.route('/signup', methods=['POST'])
 def normal_signup_route():
     return normal_signup()
 
-#Google Signup
-# @app.route('/googlesignup', methods=['GET'])
-# def google_signup_route():
-#     return google_signup()
+# Google Signup
+@app.route('/googlesignup', methods=['GET'])
+def google_signup_route():
+    return google_signup()
 
 @app.route("/google/verify", methods=["POST"])
 def route_google_verify():
@@ -67,9 +68,9 @@ def normal_login_route():
     return normal_login() 
 
 ## Google Login
-# @app.route('/googlelogin', methods=['GET'])
-# def google_login_route():
-#     return google_login()
+@app.route('/googlelogin', methods=['GET'])
+def google_login_route():
+    return google_login()
 
 # #Home Page
 
