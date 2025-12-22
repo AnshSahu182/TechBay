@@ -95,69 +95,6 @@ def callback():
         "refresh_token": refresh_token
     })
 
-####### GOOGLE VERIFY
-# def google_verify():
-#     try:
-#         token = request.json.get("credential")
-
-#         # Verify token
-#         id_info = id_token.verify_oauth2_token(
-#             token,
-#             requests.Request(),
-#             os.getenv("CLIENT_ID")
-#         )
-
-#         email = id_info["email"]
-#         name = id_info.get("name")
-#         picture = id_info.get("picture")
-
-#         # Fetch user
-#         user = users.find_one({"email": email})
-
-#         if not user:
-#             users.insert_one({
-#                 "username": name,
-#                 "email": email,
-#                 "password": None,
-#                 "image": picture,
-#                 "createdAt": datetime.utcnow(),
-#                 "updatedAt": datetime.utcnow(),
-#                 "refreshToken": None
-#             })
-#         else:
-#             users.update_one(
-#                 {"email": email},
-#                 {"$set": {"image": picture, "updatedAt": datetime.utcnow()}}
-#             )
-
-#         # Fetch updated user
-#         user = users.find_one({"email": email})
-
-#         access_token = create_access_token(identity=email)
-#         refresh_token = create_refresh_token(identity=email)
-
-#         users.update_one(
-#             {"email": email},
-#             {"$set": {"refreshToken": refresh_token}}
-#         )
-
-#         # RETURN user object for Redux
-#         return jsonify({
-#             "message": "Login successful",
-#             "access_token": access_token,
-#             "refresh_token": refresh_token,
-#             "user": {
-#                 "username": user.get("username"),
-#                 "email": user.get("email"),
-#                 "image": user.get("image")
-#             }
-#         })
-
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 400
-    
-## Normal Signup
-#@app.route('/signup', methods=['POST'])
 def normal_signup():
     try:
         data = request.get_json()
@@ -177,7 +114,7 @@ def normal_signup():
         if password != confirmPassword:
             return jsonify({"error": "Password and confirm password does not match"}), 409
 
-        hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
+        hashed_pw = bcrypt.generate_password_hash(password, rounds=10).decode('utf-8')
 
         users.insert_one({
             "username": name,
@@ -233,4 +170,4 @@ def normal_login():
         "email": email,
         "access_token": access_token,
         "refresh_token": refresh_token
-    }), 200
+    }), 200 

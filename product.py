@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
-from flask import Flask,request,jsonify
+from flask import request,jsonify
 from bson import ObjectId
 
 load_dotenv()
@@ -14,14 +14,31 @@ limit = 12
 
 #Product Page
 # @app.route("/products", methods=['GET'])
+# def products_page():
+#     page = int(request.args.get("page", 1))
+#     skip = (page - 1) * limit
+
+#     products_list = list(products.find())
+#     for product in products_list:
+#             product['_id'] = str(product['_id'])
+#     return jsonify(products_list),200
+
+
 def products_page():
     page = int(request.args.get("page", 1))
     skip = (page - 1) * limit
 
-    products_list = list(products.find())
-    for product in products_list:
-            product['_id'] = str(product['_id'])
-    return jsonify(products_list),200
+    cursor = products.find(
+        {},                             # no filter
+        {"name": 1, "price": 1, "category": 1}  # projection ✅
+    ).skip(skip).limit(limit)           # pagination ✅
+
+    products_list = []
+    for product in cursor:
+        product["_id"] = str(product["_id"])
+        products_list.append(product)
+
+    return jsonify(products_list), 200
 
 
 # @app.route("/products/categories", methods=['POST'])

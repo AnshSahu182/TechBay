@@ -15,7 +15,7 @@ from profile import user_details,upload_profile_photo,add_address,view_address,d
 from cart import view_cart,add_to_cart,delete_from_cart,reduce_from_cart
 from wishlist import delete_from_wishlist,add_to_wishlist,view_wishlist
 from order import confirm_order, view_orders, cancel_order,view_order_by_id
-
+from review import review_product,update_review,delete_review,get_reviews_by_product
 
 app=Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -211,7 +211,28 @@ def view_order_by_id_route(current_user, order_id):
 def cancel_order_route(current_user, order_id):
     return cancel_order(current_user, order_id)
 
+#Review
+@app.route('/reviewproduct/<string:product_id>', methods=['POST'])
+@token_required
+def review_product_route(current_user, product_id):
+    return review_product(current_user, product_id)
+
+@app.route('/updatereview/<string:review_id>', methods=['PUT'])
+@token_required
+def update_review_route(current_user, review_id):
+    return update_review(current_user, review_id)
+
+@app.route('/deletereview/<string:review_id>', methods=['DELETE'])
+@token_required
+def delete_review_route(current_user, review_id):
+    return delete_review(current_user, review_id)
+
+@app.route('/reviewbyproduct/<string:product_id>', methods=['GET'])
+def get_reviews_by_product_route(product_id):
+    return get_reviews_by_product(product_id)
+
 if __name__== '__main__':
     from dotenv import load_dotenv
     load_dotenv()
+    print(os.getenv('MongoClient_URI'))
     app.run(host='0.0.0.0', use_reloader=False, port=5000,debug=True)
