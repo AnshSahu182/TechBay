@@ -44,7 +44,7 @@ def test_signup_password_mismatch(client):
 def test_signup_duplicate_email(client):
     payload = {
         "name": "User",
-        "email": "dup@test.com",
+        "email": "test@test.com",
         "password": "123",
         "confirmPassword": "123"
     }
