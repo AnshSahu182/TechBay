@@ -16,14 +16,9 @@ from cart import view_cart,add_to_cart,delete_from_cart,reduce_from_cart
 from wishlist import delete_from_wishlist,add_to_wishlist,view_wishlist
 from order import confirm_order, view_orders, cancel_order,view_order_by_id
 from review import review_product,update_review,delete_review,get_reviews_by_product
-from db import get_database
 # For using different databases for testing(mongomock) and development
-def create_app(testing=False):
-        app=Flask(__name__)
-        app.config['Testing']=testing
-        app.db=get_database(testing)
-        return app
-app=create_app(testing=False)
+
+app = Flask(__name__)
 
 CORS(app, supports_credentials=True)
 
