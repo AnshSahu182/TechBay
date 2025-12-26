@@ -25,13 +25,13 @@ limit = 12
 
 
 def products_page():
-    page = int(request.args.get("page", 1))
-    skip = (page - 1) * limit
+    # page = int(request.args.get("page", 1))
+    # skip = (page - 1) * limit
 
     cursor = products.find(
         {},                             # no filter
         {"title": 1,"description": 1,"price": 1,"brand": 1,"image": 1, "category": 1}  # projection ✅
-    ).skip(skip).limit(limit)           # pagination ✅
+    )#.skip(skip).limit(limit)           # pagination ✅
 
     products_list = []
     for product in cursor:
