@@ -233,6 +233,11 @@ def delete_review_route(current_user, review_id):
 def get_reviews_by_product_route(product_id):
     return get_reviews_by_product(product_id)
 
+# Health Check
+@app.route("/health")
+def health():
+    return {"status": "ok"}, 200
+
 if __name__== '__main__':
     from dotenv import load_dotenv
     load_dotenv()
