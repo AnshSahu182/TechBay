@@ -26,6 +26,9 @@ jobs:
             pip install -r requirements.txt
           fi
           pip install pytest mongomock
+    
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
 
       - name: Run API tests
         run: pytest
