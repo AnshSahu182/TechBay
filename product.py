@@ -30,7 +30,7 @@ def products_page():
 
     cursor = products.find(
         {},                             # no filter
-        {"title": 1,"description": 1,"price": 1,"brand": 1,"image": 1}  # projection ✅
+        {"title": 1,"description": 1,"category": 1,"price": 1,"brand": 1,"image": 1}  # projection ✅
     )#.skip(skip).limit(limit)           # pagination ✅
 
     products_list = []
