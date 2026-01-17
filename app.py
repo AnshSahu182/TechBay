@@ -234,7 +234,7 @@ def get_reviews_by_product_route(product_id):
     return get_reviews_by_product(product_id)
 
 # Health Check
-@app.route("/health")
+@app.route("/healthstatus")
 def health():
     return {"status": "ok"}, 200
 
