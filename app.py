@@ -237,6 +237,10 @@ def get_reviews_by_product_route(product_id):
 def health():
     return {"status": "ok"}, 200
 
+#Check branch
+@app.route("/branch")
+def branch():
+    return {"status": "staging"}, 200
 if __name__== '__main__':
     from dotenv import load_dotenv
     load_dotenv()
